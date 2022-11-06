@@ -1,0 +1,207 @@
+import AWSMock from 'aws-sdk-mock';
+import AWS from 'aws-sdk';
+import { GetItemInput, PutItemInput } from 'aws-sdk/clients/dynamodb';
+import { InventoryReqDto } from '../../src/dto/InventoryReqDt';
+import { Category, CATEGORY_ALL, InventoryModel } from '../../src/models/Inventory';
+import { HttpError, httpStatusCodes } from '../../src/commons/http'
+import { InventoryDiscountModel } from '../../src/models/InventoryDiscount';
+
+const spyInventoryDiscountServiceFindAll = jest.fn().mockImplementation(() => {
+    Promise.resolve(true);
+});
+jest.mock('../../src/services/InventoryDiscountService', () => ({
+    findAll: spyInventoryDiscountServiceFindAll
+}));
+
+describe('InventoryService', () => {
+    const defaultInvetory = {
+        category: Category.FOOD,
+        name: 'bread',
+        currentStock: 5,
+        restaurantId: "1",
+        inventoryId: "food#1",
+        price: 10,
+        supplier: JSON.stringify({
+            name: 'bread supplier',
+            description: 'bread supplier description'
+        })
+    }
+    const defaultInventories = [{
+        category: Category.FOOD,
+        name: 'bread',
+        currentStock: 5,
+        restaurantId: "1",
+        inventoryId: "food#1",
+        price: 10,
+        supplier: JSON.stringify({
+            name: 'bread supplier',
+            description: 'bread supplier description'
+        })
+    }, {
+        category: Category.BEVERAGES,
+        name: 'bread',
+        currentStock: 5,
+        restaurantId: "1",
+        inventoryId: "beverages#1",
+        price: 10,
+        supplier: JSON.stringify({
+            name: 'beverages supplier',
+            description: 'beverages supplier description'
+        })
+    }]
+    beforeEach(() => {
+        spyInventoryDiscountServiceFindAll.mockReset();
+    });
+    beforeAll(() => {
+        AWSMock.setSDKInstance(AWS);
+    });
+    afterAll(() => {
+        AWSMock.restore('DynamoDB.DocumentClient');
+    })
+    test('create method should return inventory model', async () => {
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        AWSMock.mock('DynamoDB.DocumentClient', 'put', (params: PutItemInput, callback: Function) => {
+            callback(null, {});
+        });
+        
+        const input : InventoryReqDto = {
+            category: Category.FOOD,
+            name: 'bread',
+            currentStock: 5,
+            restaurantId: "1",
+            price: 10,
+            supplier: {
+                name: 'bread supplier',
+                description: 'bread supplier description'
+            }
+        }
+        const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+        const invetoryModel: InventoryModel = await inventoryService.create(input)
+        expect(invetoryModel.name).toBe(input.name);
+        expect(invetoryModel.price).toBe(input.price);
+        expect(invetoryModel.currentStock).toBe(input.currentStock);
+        expect(invetoryModel.supplier).toBe(input.supplier);
+        expect(invetoryModel.restaurantId).toBe(input.restaurantId);
+    });
+
+    test('findById method return error not found', async () => {
+        try {
+            // eslint-disable-next-line @typescript-eslint/ban-types
+            AWSMock.mock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
+                callback(null, {Item: null});
+            });
+            
+            const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+            await inventoryService.findById("1")
+        } catch (error: unknown) {
+            expect((error as HttpError).statusCode).toBe(httpStatusCodes.NOT_FOUND)
+            expect((error as HttpError).message).toBe(JSON.stringify({ error: "not found" }))
+        }
+        
+    });
+    it('findById method should return matched inventory model without discount', async () => {
+        const expected = defaultInvetory
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        AWSMock.remock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
+            callback(null, {Item: expected});
+        });
+        spyInventoryDiscountServiceFindAll.mockImplementation(() => Promise.resolve([]))
+        
+        const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+        const inventory = await inventoryService.findById("food#1")
+        expect(inventory.inventoryId).toBe(expected.inventoryId)
+        expect(inventory.name).toBe(expected.name)
+        expect(inventory.price).toBe(expected.price)
+    });
+
+    test('findById method should return matched inventory model with discount specific category 10%', async () => {
+        const expected = defaultInvetory
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        AWSMock.remock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
+            callback(null, {Item: expected});
+        });
+        spyInventoryDiscountServiceFindAll.mockImplementation(() => Promise.resolve([
+            new InventoryDiscountModel(Category.FOOD, 10)
+        ]))
+        
+        const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+        const inventory = await inventoryService.findById("food#1")
+        expect(inventory.toResponse().price).toBe(9)
+    });
+    test('findById method should return matched inventory model with discount all category 20%', async () => {
+        const expected = defaultInvetory
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        AWSMock.remock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
+            callback(null, {Item: expected});
+        });
+        spyInventoryDiscountServiceFindAll.mockImplementation(() => Promise.resolve([
+            new InventoryDiscountModel(CATEGORY_ALL, 20)
+        ]))
+        
+        const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+        const inventory = await inventoryService.findById("food#1")
+        expect(inventory.toResponse().price).toBe(8)
+    });
+
+    test('findAll method should return list inventory model without discount', async () => {
+        const expected = defaultInventories
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        AWSMock.mock('DynamoDB.DocumentClient', 'scan', (params: GetItemInput, callback: Function) => {
+            callback(null, {Items: expected});
+        });
+        spyInventoryDiscountServiceFindAll.mockImplementation(() => Promise.resolve([]))
+        
+        const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+        const inventories = await inventoryService.findAll()
+        expect(inventories.length).toBe(2)
+        for (let index = 0; index < inventories.length; index++) {
+            expect(inventories[index].name).toBe(expected[index].name)
+            expect(inventories[index].price).toBe(expected[index].price)
+            expect(inventories[index].inventoryId).toBe(expected[index].inventoryId)
+        }
+    });
+
+    test('findAll method should return list inventory model with food discount 10% and beverages discount 20%', async () => {
+        const expected = defaultInventories
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        AWSMock.remock('DynamoDB.DocumentClient', 'scan', (params: GetItemInput, callback: Function) => {
+            callback(null, {Items: expected});
+        });
+        spyInventoryDiscountServiceFindAll.mockImplementation(() => Promise.resolve([
+            new InventoryDiscountModel(Category.FOOD, 10),
+            new InventoryDiscountModel(Category.BEVERAGES, 20),
+        ]))
+        
+        const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+        const inventories = await inventoryService.findAll()
+        expect(inventories.length).toBe(2)
+        const expectedPrices = [9, 8]
+        for (let index = 0; index < inventories.length; index++) {
+            const invetoryRes = inventories[index].toResponse()
+            expect(invetoryRes.name).toBe(expected[index].name)
+            expect(invetoryRes.price).toBe(expectedPrices[index])
+            expect(invetoryRes.id).toBe(expected[index].inventoryId)
+        }
+    });
+
+    test('findAll method should return list inventory model with all discount 20%', async () => {
+        const expected = defaultInventories
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        AWSMock.remock('DynamoDB.DocumentClient', 'scan', (params: GetItemInput, callback: Function) => {
+            callback(null, {Items: expected});
+        });
+        spyInventoryDiscountServiceFindAll.mockImplementation(() => Promise.resolve([
+            new InventoryDiscountModel(CATEGORY_ALL, 20),
+        ]))
+        
+        const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+        const inventories = await inventoryService.findAll()
+        expect(inventories.length).toBe(2)
+        for (let index = 0; index < inventories.length; index++) {
+            const invetoryRes = inventories[index].toResponse()
+            expect(invetoryRes.name).toBe(expected[index].name)
+            expect(invetoryRes.price).toBe(8)
+            expect(invetoryRes.id).toBe(expected[index].inventoryId)
+        }
+    });
+})
