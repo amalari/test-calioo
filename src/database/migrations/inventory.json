@@ -1,0 +1,12 @@
+{
+    "Table": {
+        "TableName": "InventoriesTable",
+        "KeySchema": [{
+            "AttributeName": "restaurantId",
+            "KeyType": "HASH"
+        }, {
+            "AttributeName": "inventoryId",
+            "KeyType": "RANGE"
+        }]
+    }
+}

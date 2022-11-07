@@ -1,32 +1,35 @@
-import AWS from 'aws-sdk';
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { v4 } from "uuid"
-import { HttpError, httpStatusCodes } from "../commons/http";
 import { InventoryReqDto } from "../dto/InventoryReqDt";
 import { CATEGORY_ALL, InventoryModel } from "../models/Inventory"
 import inventoryDiscountService from "./InventoryDiscountService";
+import { documentClient } from '../commons/dynamodb'
 
 export interface IInventoryService {
-    findById(id: string) : Promise<InventoryModel>
+    findById(id: string) : Promise<InventoryModel | null>
     create(input: InventoryReqDto) : Promise<InventoryModel>
     findAll() : Promise<InventoryModel[]>
 }
 class InventoryService implements IInventoryService {
     private table = 'InventoriesTable'
-    private db: AWS.DynamoDB.DocumentClient = new AWS.DynamoDB.DocumentClient()
+    private db: DocumentClient = documentClient
     private pk1 = 'restaurantId'
     private sk1 = 'inventoryId'
 
-    async findById(id: string) : Promise<InventoryModel> {
+    async findById(id: string) : Promise<InventoryModel | null> {
+        const arrId = id.split('#')
         const data = await this.db
             .get({
                 TableName: this.table,
                 Key: {
-                    [this.pk1]: id,
+                    [this.pk1]: arrId[2],
+                    [this.sk1]: id,
                 },
+                ConsistentRead: true
             })
             .promise()
         if (!data.Item) {
-            throw new HttpError(httpStatusCodes.NOT_FOUND, { error: "not found" });
+            return null
         }
         const inventory = data.Item
         const inventoryData = new InventoryModel(
@@ -73,7 +76,7 @@ class InventoryService implements IInventoryService {
                 inventory.name,
                 inventory.currentStock,
                 inventory.price,
-                inventory.supplier,
+                JSON.parse(inventory.supplier),
             )
             const category = inventoryData.getCategory()
             if(Object.prototype.hasOwnProperty.call(inventoryDiscountMap, category) || Object.prototype.hasOwnProperty.call(inventoryDiscountMap, CATEGORY_ALL)){
@@ -85,10 +88,10 @@ class InventoryService implements IInventoryService {
 
     async create(input: InventoryReqDto) : Promise<InventoryModel> {
         const data = new InventoryModel(
-            input.restaurantId,
-            `${input.category}#${v4()}`,
+            input.restaurant_id,
+            `${input.category}#${v4()}#${input.restaurant_id}`,
             input.name,
-            input.currentStock,
+            input.current_stock,
             input.price,
             input.supplier,
         );

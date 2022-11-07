@@ -4,7 +4,7 @@ export const CATEGORY_ALL = 'all'
 export enum Category {
     FOOD = 'food',
     COOKING_EQUIPMENT = 'cooking-equipment',
-    BEVERAGES = 'beverages',
+    BEVERAGES = 'beverages'
 }
 
 export type Inventory = {
@@ -46,6 +46,10 @@ export class InventoryModel {
     getCategory(): string {
         const [category] = this.inventoryId.split('#')
         return category
+    }
+
+    static validateId(id: string): boolean {
+        return id.split('#').length === 3
     }
 
     toResponse() : InventoryResDto {

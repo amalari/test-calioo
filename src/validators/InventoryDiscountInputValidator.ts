@@ -7,8 +7,8 @@ class InventoryDiscountInputValidator extends BaseInputValidator<InventoryDiscou
     constructor(){
         const categories = Object.values(Category)
         const schema : yup.SchemaOf<InventoryDiscountReqDto> = yup.object().shape({
-            category: yup.string().oneOf([...categories, null]),
-            discount: yup.number().required()
+            category: yup.string().oneOf(categories),
+            discount: yup.number().max(100).min(1).required()
         })
         super(schema)
     }

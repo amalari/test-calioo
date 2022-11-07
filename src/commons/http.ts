@@ -18,7 +18,7 @@ export const handleError = (e: unknown) => {
     const headers = {
         "content-type": "application/json",
     };
-        
+    
     if (e instanceof yup.ValidationError) {
         return {
           statusCode: httpStatusCodes.BAD_REQUEST,

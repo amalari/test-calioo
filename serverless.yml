@@ -40,25 +40,25 @@ provider:
 
 functions:
   listInventory:
-    handler: src/handlers.listInventory
+    handler: src/handlers/InventoryHandlers.listInventory
     events:
       - httpApi:
           path: /inventory
           method: get
   getInventory:
-    handler: src/handlers.getInventory
+    handler: src/handlers/InventoryHandlers.getInventory
     events:
       - httpApi:
           path: /inventory/{id}
           method: get
   createInventory:
-    handler: src/handlers.createInventory
+    handler: src/handlers/InventoryHandlers.createInventory
     events:
       - httpApi:
           path: /inventory
           method: post
   upsertInventoryDiscount:
-    handler: src/handlers.putInventoryDiscount
+    handler: src/handlers/InventoryDiscountHandlers.putInventoryDiscount
     events:
       - httpApi:
           path: /inventory-discount
@@ -105,6 +105,17 @@ functions:
 
 plugins:
   - serverless-plugin-typescript
+  - serverless-offline
+  - serverless-dynamodb-local
+
+custom:
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
 # you can add CloudFormation resource templates here
 #resources:
 #  Resources:
@@ -130,14 +141,14 @@ resources:
             AttributeType: S
           - AttributeName: inventoryId
             AttributeType: S
-          - AttributeName: name
-            AttributeType: S
-          - AttributeName: currentStock
-            AttributeType: N
-          - AttributeName: price
-            AttributeType: S
-          - AttributeName: supplier
-            AttributeType: S
+          # - AttributeName: name
+          #   AttributeType: S
+          # - AttributeName: currentStock
+          #   AttributeType: N
+          # - AttributeName: price
+          #   AttributeType: S
+          # - AttributeName: supplier
+          #   AttributeType: S
         KeySchema:
           - AttributeName: restaurantId
             KeyType: HASH
@@ -153,8 +164,8 @@ resources:
         AttributeDefinitions:
           - AttributeName: category
             AttributeType: S
-          - AttributeName: discount
-            AttributeType: N
+          # - AttributeName: discount
+          #   AttributeType: N
         KeySchema:
           - AttributeName: category
             KeyType: HASH

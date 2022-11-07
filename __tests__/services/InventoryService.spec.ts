@@ -67,8 +67,8 @@ describe('InventoryService', () => {
         const input : InventoryReqDto = {
             category: Category.FOOD,
             name: 'bread',
-            currentStock: 5,
-            restaurantId: "1",
+            current_stock: 5,
+            restaurant_id: "1",
             price: 10,
             supplier: {
                 name: 'bread supplier',
@@ -79,25 +79,20 @@ describe('InventoryService', () => {
         const invetoryModel: InventoryModel = await inventoryService.create(input)
         expect(invetoryModel.name).toBe(input.name);
         expect(invetoryModel.price).toBe(input.price);
-        expect(invetoryModel.currentStock).toBe(input.currentStock);
+        expect(invetoryModel.currentStock).toBe(input.current_stock);
         expect(invetoryModel.supplier).toBe(input.supplier);
-        expect(invetoryModel.restaurantId).toBe(input.restaurantId);
+        expect(invetoryModel.restaurantId).toBe(input.restaurant_id);
     });
 
-    test('findById method return error not found', async () => {
-        try {
-            // eslint-disable-next-line @typescript-eslint/ban-types
-            AWSMock.mock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
-                callback(null, {Item: null});
-            });
-            
-            const inventoryService = jest.requireActual('../../src/services/InventoryService').default
-            await inventoryService.findById("1")
-        } catch (error: unknown) {
-            expect((error as HttpError).statusCode).toBe(httpStatusCodes.NOT_FOUND)
-            expect((error as HttpError).message).toBe(JSON.stringify({ error: "not found" }))
-        }
+    test('findById method return null, matched inventory id not found', async () => {
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        AWSMock.mock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
+            callback(null, {Item: null});
+        });
         
+        const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+        const inventory = await inventoryService.findById("1")
+        expect(inventory).toBe(null)
     });
     it('findById method should return matched inventory model without discount', async () => {
         const expected = defaultInvetory

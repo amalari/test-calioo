@@ -1,10 +1,10 @@
 import { Supplier } from "../models/Inventory"
 
 export type InventoryReqDto = {
-    restaurantId: string
+    restaurant_id: string
     name: string
     category: string
-    currentStock: number
+    current_stock: number
     price: number
     supplier: Supplier
 }

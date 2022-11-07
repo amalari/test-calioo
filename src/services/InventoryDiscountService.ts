@@ -2,6 +2,7 @@ import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { InventoryDiscountReqDto } from "../dto/InventoryDiscountReqDto";
 import { CATEGORY_ALL } from "../models/Inventory"
 import { InventoryDiscountModel } from "../models/InventoryDiscount";
+import { documentClient } from '../commons/dynamodb'
 
 export interface IInventoryDiscountService {
     findAll() : Promise<InventoryDiscountModel[]>
@@ -10,7 +11,7 @@ export interface IInventoryDiscountService {
 
 class InventoryDiscountService implements IInventoryDiscountService {
     private table = 'InventoryDiscountsTable'
-    private db: DocumentClient = new DocumentClient()
+    private db: DocumentClient = documentClient
     private pk1 = 'category'
 
     async findAll() : Promise<InventoryDiscountModel[]> {

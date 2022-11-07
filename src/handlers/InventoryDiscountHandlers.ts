@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { ValidationError } from "yup";
 import { httpStatusCodes } from "../commons/http";
 import { InventoryDiscountReqDto } from "../dto/InventoryDiscountReqDto";
 import { InventoryDiscountResDto } from "../dto/InventoryDiscountResDto";
@@ -18,8 +19,10 @@ class InventoryDiscountHandlers extends BaseHandlers {
 
     async putInventoryDiscount(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
         try {
+            if(!event.body) throw new ValidationError('input cannot be null or empty')
+
             const reqBody = JSON.parse(event.body as string);
-            this.validator.validate(reqBody)
+            await this.validator.validate(reqBody)
             const inventoryDiscount : InventoryDiscountModel = await this.service.upsert(reqBody as InventoryDiscountReqDto);
             return this.handleSuccess<InventoryDiscountResDto>(httpStatusCodes.OK, inventoryDiscount)
         } catch (error) {
@@ -30,6 +33,4 @@ class InventoryDiscountHandlers extends BaseHandlers {
 
 const handlers = new InventoryDiscountHandlers(inventoryDiscountService, inventoryDiscountInputValidator)
 
-export default {
-    putInventoryDiscount: handlers.putInventoryDiscount
-}
+export const putInventoryDiscount = handlers.putInventoryDiscount.bind(handlers)

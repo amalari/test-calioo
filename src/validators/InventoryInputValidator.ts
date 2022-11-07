@@ -7,10 +7,10 @@ class InventoryInputValidator extends BaseInputValidator<InventoryReqDto> implem
     constructor(){
         const schema : yup.SchemaOf<InventoryReqDto> = yup.object().shape({
             category: yup.string().oneOf(Object.values(Category)).required(),
-            currentStock: yup.number().required(),
+            current_stock: yup.number().required(),
             name: yup.string().required(),
             price: yup.number().required(),
-            restaurantId: yup.string().required(),
+            restaurant_id: yup.string().required(),
             supplier: yup.object().shape({
                 name: yup.string().required(),
                 description: yup.string().required()
