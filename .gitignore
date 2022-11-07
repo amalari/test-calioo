@@ -1,4 +1,5 @@
 .serverless
 node_modules
 .build
+.dynamodb
 .vscode
