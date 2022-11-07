@@ -54,7 +54,7 @@ export class InventoryModel {
 
     toResponse() : InventoryResDto {
         const [category] = this.inventoryId.split('#')
-        const discount = this.discount ? (this.discount/100) : 1
+        const discount = this.discount ? (this.discount/100) : 0
         return {
             id: this.inventoryId,
             category,

@@ -1,15 +1,17 @@
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DocumentClient, ScanInput } from "aws-sdk/clients/dynamodb";
 import { v4 } from "uuid"
 import { InventoryReqDto } from "../dto/InventoryReqDt";
 import { CATEGORY_ALL, InventoryModel } from "../models/Inventory"
 import inventoryDiscountService from "./InventoryDiscountService";
 import { documentClient } from '../commons/dynamodb'
+import type { FindAllInput, FindAllOutput } from './service.d'
 
 export interface IInventoryService {
     findById(id: string) : Promise<InventoryModel | null>
     create(input: InventoryReqDto) : Promise<InventoryModel>
-    findAll() : Promise<InventoryModel[]>
+    findAll(params?: FindAllInput) : Promise<FindAllOutput<InventoryModel[]>>
 }
+
 class InventoryService implements IInventoryService {
     private table = 'InventoriesTable'
     private db: DocumentClient = documentClient
@@ -53,14 +55,20 @@ class InventoryService implements IInventoryService {
         return inventoryData
     }
 
-    async findAll() : Promise<InventoryModel[]> {
+    async findAll(params?: FindAllInput) : Promise<FindAllOutput<InventoryModel[]>> {
+        const scanParams: ScanInput = {TableName: this.table}
+        if(params?.limit) scanParams.Limit = params?.limit
+        if(params?.lastKey) scanParams.ExclusiveStartKey = JSON.parse(params.lastKey)
+
         const data = await this.db
-            .scan({
-                TableName: this.table,
-            })
+            .scan(scanParams)
             .promise()
+        
         if (!data.Items) {
-            return [];
+            return {
+                data: [],
+                lastKey: null
+            };
         }
         // discount mapper
         const inventoryDiscounts = await inventoryDiscountService.findAll()
@@ -68,8 +76,8 @@ class InventoryService implements IInventoryService {
         inventoryDiscounts.forEach((inventoryDiscount) => {
             inventoryDiscountMap[inventoryDiscount.category] = inventoryDiscount.discount
         })
-
-        return data.Items.map((inventory) => {
+        
+        const resultData = data.Items.map((inventory) => {
             const inventoryData = new InventoryModel(
                 inventory.restaurantId,
                 inventory.inventoryId,
@@ -84,6 +92,10 @@ class InventoryService implements IInventoryService {
             }
             return inventoryData
         })
+        return {
+            data: resultData,
+            lastKey: data.LastEvaluatedKey || null
+        }
     }
 
     async create(input: InventoryReqDto) : Promise<InventoryModel> {
@@ -95,6 +107,7 @@ class InventoryService implements IInventoryService {
             input.price,
             input.supplier,
         );
+        console.log(data.toObject())
         
         await this.db
             .put({

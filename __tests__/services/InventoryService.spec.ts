@@ -18,7 +18,7 @@ describe('InventoryService', () => {
         name: 'bread',
         currentStock: 5,
         restaurantId: "1",
-        inventoryId: "food#1",
+        inventoryId: "food#1#1",
         price: 10,
         supplier: JSON.stringify({
             name: 'bread supplier',
@@ -30,7 +30,7 @@ describe('InventoryService', () => {
         name: 'bread',
         currentStock: 5,
         restaurantId: "1",
-        inventoryId: "food#1",
+        inventoryId: "food#1#1",
         price: 10,
         supplier: JSON.stringify({
             name: 'bread supplier',
@@ -41,7 +41,7 @@ describe('InventoryService', () => {
         name: 'bread',
         currentStock: 5,
         restaurantId: "1",
-        inventoryId: "beverages#1",
+        inventoryId: "beverages#1#1",
         price: 10,
         supplier: JSON.stringify({
             name: 'beverages supplier',
@@ -102,7 +102,7 @@ describe('InventoryService', () => {
         spyInventoryDiscountServiceFindAll.mockImplementation(() => Promise.resolve([]))
         
         const inventoryService = jest.requireActual('../../src/services/InventoryService').default
-        const inventory = await inventoryService.findById("food#1")
+        const inventory = await inventoryService.findById("food#1#1")
         expect(inventory.inventoryId).toBe(expected.inventoryId)
         expect(inventory.name).toBe(expected.name)
         expect(inventory.price).toBe(expected.price)
@@ -119,7 +119,7 @@ describe('InventoryService', () => {
         ]))
         
         const inventoryService = jest.requireActual('../../src/services/InventoryService').default
-        const inventory = await inventoryService.findById("food#1")
+        const inventory = await inventoryService.findById("food#1#1")
         expect(inventory.toResponse().price).toBe(9)
     });
     test('findById method should return matched inventory model with discount all category 20%', async () => {
@@ -133,7 +133,7 @@ describe('InventoryService', () => {
         ]))
         
         const inventoryService = jest.requireActual('../../src/services/InventoryService').default
-        const inventory = await inventoryService.findById("food#1")
+        const inventory = await inventoryService.findById("food#1#1")
         expect(inventory.toResponse().price).toBe(8)
     });
 
@@ -147,11 +147,11 @@ describe('InventoryService', () => {
         
         const inventoryService = jest.requireActual('../../src/services/InventoryService').default
         const inventories = await inventoryService.findAll()
-        expect(inventories.length).toBe(2)
-        for (let index = 0; index < inventories.length; index++) {
-            expect(inventories[index].name).toBe(expected[index].name)
-            expect(inventories[index].price).toBe(expected[index].price)
-            expect(inventories[index].inventoryId).toBe(expected[index].inventoryId)
+        expect(inventories.data.length).toBe(2)
+        for (let index = 0; index < inventories.data.length; index++) {
+            expect(inventories.data[index].name).toBe(expected[index].name)
+            expect(inventories.data[index].price).toBe(expected[index].price)
+            expect(inventories.data[index].inventoryId).toBe(expected[index].inventoryId)
         }
     });
 
@@ -168,10 +168,10 @@ describe('InventoryService', () => {
         
         const inventoryService = jest.requireActual('../../src/services/InventoryService').default
         const inventories = await inventoryService.findAll()
-        expect(inventories.length).toBe(2)
+        expect(inventories.data.length).toBe(2)
         const expectedPrices = [9, 8]
-        for (let index = 0; index < inventories.length; index++) {
-            const invetoryRes = inventories[index].toResponse()
+        for (let index = 0; index < inventories.data.length; index++) {
+            const invetoryRes = inventories.data[index].toResponse()
             expect(invetoryRes.name).toBe(expected[index].name)
             expect(invetoryRes.price).toBe(expectedPrices[index])
             expect(invetoryRes.id).toBe(expected[index].inventoryId)
@@ -190,12 +190,30 @@ describe('InventoryService', () => {
         
         const inventoryService = jest.requireActual('../../src/services/InventoryService').default
         const inventories = await inventoryService.findAll()
-        expect(inventories.length).toBe(2)
-        for (let index = 0; index < inventories.length; index++) {
-            const invetoryRes = inventories[index].toResponse()
+        expect(inventories.data.length).toBe(2)
+        for (let index = 0; index < inventories.data.length; index++) {
+            const invetoryRes = inventories.data[index].toResponse()
             expect(invetoryRes.name).toBe(expected[index].name)
             expect(invetoryRes.price).toBe(8)
             expect(invetoryRes.id).toBe(expected[index].inventoryId)
         }
+    });
+
+    test('findAll method should return list inventory model with pagination limit 1', async () => {
+        const expected = defaultInventories
+        const lastKeyExpected = {inventoryId: "beverages#1#1", restaurantId: "1"}
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        AWSMock.remock('DynamoDB.DocumentClient', 'scan', (params: GetItemInput, callback: Function) => {
+            callback(null, {Items: [expected[0]], LastEvaluatedKey: lastKeyExpected});
+        });
+        spyInventoryDiscountServiceFindAll.mockImplementation(() => Promise.resolve([]))
+        
+        const inventoryService = jest.requireActual('../../src/services/InventoryService').default
+        const inventories = await inventoryService.findAll({
+
+        })
+        expect(inventories.data.length).toBe(1)
+        expect(inventories.data[0].inventoryId).toBe("food#1#1")
+        expect(inventories.lastKey).toBe(lastKeyExpected)
     });
 })

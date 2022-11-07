@@ -5,6 +5,7 @@ import { InventoryReqDto } from "../dto/InventoryReqDt";
 import { InventoryResDto } from "../dto/InventoryResDto";
 import { InventoryModel } from "../models/Inventory";
 import inventoryService, { IInventoryService } from "../services/InventoryService";
+import { FindAllInput } from "../services/service";
 import { IValidator } from "../validators/BaseInputValidator";
 import inventoryInputValidator from "../validators/InventoryInputValidator";
 import { BaseHandlers } from "./BaseHandlers";
@@ -17,10 +18,24 @@ class InventoryHandlers extends BaseHandlers {
         super()
     }
 
-    async listInventory(): Promise<APIGatewayProxyResult>{
+    async listInventory(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult>{
         try {
-            const inventories = await this.service.findAll()
-            return this.handleSuccess<InventoryResDto[]>(httpStatusCodes.OK, inventories.map((inventory) => inventory.toResponse()))
+            const params: FindAllInput = { limit: event.queryStringParameters?.limit ? event.queryStringParameters?.limit as unknown as number : 10 }
+            if(event.queryStringParameters?.last_key){
+                params.lastKey = event.queryStringParameters?.last_key
+            }
+            const inventories = await this.service.findAll(params)
+            return this.handleSuccess<InventoryResDto[]>(
+                httpStatusCodes.OK, 
+                inventories.data.map((inventory) => inventory.toResponse()), 
+                {
+                    pagination: {
+                        size: params.limit,
+                        next: inventories.lastKey,
+                        prev: params.lastKey ? JSON.parse(params.lastKey) : null
+                    }
+                }
+            )
         } catch (error) {
             return this.handleError(error)
         }

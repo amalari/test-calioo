@@ -1,9 +1,9 @@
 import { handleError } from "../commons/http";
 
-type TPagination = {
+export type TPagination = {
     size: number
-    next?: string
-    prev?: number
+    next: {[key: string]: string} | null
+    prev: {[key: string]: string} | null
 }
 
 type TMeta = {
