@@ -3,7 +3,6 @@ import AWS from 'aws-sdk';
 import { GetItemInput, PutItemInput } from 'aws-sdk/clients/dynamodb';
 import { InventoryReqDto } from '../../src/dto/InventoryReqDt';
 import { Category, CATEGORY_ALL, InventoryModel } from '../../src/models/Inventory';
-import { HttpError, httpStatusCodes } from '../../src/commons/http'
 import { InventoryDiscountModel } from '../../src/models/InventoryDiscount';
 
 const spyInventoryDiscountServiceFindAll = jest.fn().mockImplementation(() => {
