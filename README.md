@@ -17,10 +17,6 @@ Install package that used in this app:
 ```sh
 npm i
 ```
-Install package that used in this app:
-```sh
-npm i
-```
 
 ## How to test
 ```sh
