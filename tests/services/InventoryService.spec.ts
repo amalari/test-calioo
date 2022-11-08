@@ -1,7 +1,7 @@
 import AWSMock from 'aws-sdk-mock';
 import AWS from 'aws-sdk';
 import { GetItemInput, PutItemInput } from 'aws-sdk/clients/dynamodb';
-import { InventoryReqDto } from '../../src/dto/InventoryReqDt';
+import { InventoryReqDto } from '../../src/dto/InventoryReqDto';
 import { Category, CATEGORY_ALL, InventoryModel } from '../../src/models/Inventory';
 import { InventoryDiscountModel } from '../../src/models/InventoryDiscount';
 

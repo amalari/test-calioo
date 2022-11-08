@@ -24,6 +24,7 @@ provider:
   name: aws
   runtime: nodejs16.x
   lambdaHashingVersion: 20201221
+  region: ap-southeast-1
 
   iam:
     role:
@@ -46,24 +47,57 @@ functions:
       - httpApi:
           path: /inventory
           method: get
+          queryStringParameters: {
+            limit: {
+              required: false,
+              type: 'integer',
+            },
+            last_key: {
+              required: false,
+              type: 'string',
+              description: 'get data after this parameter, type is json string object partition and sort key',
+            }
+          }
+          responseData: {
+            200: {
+              bodyType: 'InventoriesResponse'
+            }
+          }
   getInventory:
     handler: src/handlers/InventoryHandlers.getInventory
     events:
       - httpApi:
           path: /inventory/{id}
           method: get
+          responseData: {
+            200: {
+              bodyType: 'InventoryResponse'
+            }
+          }
   createInventory:
     handler: src/handlers/InventoryHandlers.createInventory
     events:
       - httpApi:
           path: /inventory
           method: post
+          bodyType: 'InventoryReqDto'
+          responseData: {
+            200: {
+              bodyType: 'InventoryResponse'
+            }
+          }
   upsertInventoryDiscount:
     handler: src/handlers/InventoryDiscountHandlers.putInventoryDiscount
     events:
       - httpApi:
           path: /inventory-discount
           method: put
+          bodyType: 'InventoryDiscountReqDto'
+          responseData: {
+            200: {
+              bodyType: 'InventoryDiscountResponse'
+            }
+          }
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -105,11 +139,21 @@ functions:
 #      variable2: value2
 
 plugins:
+  - serverless-auto-swagger
   - serverless-plugin-typescript
   - serverless-offline
   - serverless-dynamodb-local
 
 custom:
+  autoswagger:
+    typefiles: [
+      './src/dto/InventoryDiscountReqDto.ts',
+      './src/dto/InventoryDiscountResDto.ts',
+      './src/dto/InventoryReqDto.ts',
+      './src/dto/InventoryResDto.ts',
+      './src/dto/swagger/swagger.d.ts',
+      './src/types/response.d.ts'
+    ]
   dynamodb:
     stages:
       - dev

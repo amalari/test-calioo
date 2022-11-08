@@ -24,6 +24,7 @@
     "jest": "^29.2.2",
     "prettier": "^2.7.1",
     "serverless": "^3.22.0",
+    "serverless-auto-swagger": "^2.10.0",
     "serverless-dynamodb-local": "^0.2.40",
     "serverless-offline": "^11.2.3",
     "serverless-plugin-typescript": "^2.1.2",
@@ -41,7 +42,7 @@
       "<rootDir>"
     ],
     "testMatch": [
-      "**/__tests__/**/?(*.)+(spec|test).+(ts|tsx|js)",
+      "**/tests/**/?(*.)+(spec|test).+(ts|tsx|js)",
       "**/src/**/?(*.)+(spec|test).+(ts|tsx|js)"
     ],
     "transform": {

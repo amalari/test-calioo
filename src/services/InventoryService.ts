@@ -1,6 +1,6 @@
 import { DocumentClient, ScanInput } from "aws-sdk/clients/dynamodb";
 import { v4 } from "uuid"
-import { InventoryReqDto } from "../dto/InventoryReqDt";
+import { InventoryReqDto } from "../dto/InventoryReqDto";
 import { CATEGORY_ALL, InventoryModel } from "../models/Inventory"
 import inventoryDiscountService from "./InventoryDiscountService";
 import { documentClient } from '../commons/dynamodb'

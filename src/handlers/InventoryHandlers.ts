@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { ValidationError } from "yup";
 import { HttpError, httpStatusCodes } from "../commons/http";
-import { InventoryReqDto } from "../dto/InventoryReqDt";
+import { InventoryReqDto } from "../dto/InventoryReqDto";
 import { InventoryResDto } from "../dto/InventoryResDto";
 import { InventoryModel } from "../models/Inventory";
 import inventoryService, { IInventoryService } from "../services/InventoryService";

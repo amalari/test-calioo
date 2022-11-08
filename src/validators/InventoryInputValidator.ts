@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { InventoryReqDto } from "../dto/InventoryReqDt";
+import { InventoryReqDto } from "../dto/InventoryReqDto";
 import { Category } from "../models/Inventory";
 import { BaseInputValidator, IValidator } from "./BaseInputValidator";
 

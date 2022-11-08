@@ -1,14 +1,6 @@
 import { handleError } from "../commons/http";
+import { TMeta } from "../types/response";
 
-export type TPagination = {
-    size: number
-    next: {[key: string]: string} | null
-    prev: {[key: string]: string} | null
-}
-
-type TMeta = {
-    pagination: TPagination
-}
 export class BaseHandlers {
     protected headers = {
         "content-type": "application/json",

@@ -4,7 +4,7 @@ import { FindAllOutput } from '../../src/services/service';
 import { listInventory, getInventory, createInventory } from '../../src/handlers/InventoryHandlers'
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { httpStatusCodes } from '../../src/commons/http';
-import { InventoryReqDto } from '../../src/dto/InventoryReqDt';
+import { InventoryReqDto } from '../../src/dto/InventoryReqDto';
 
 describe('InventoryHandlers', () => {
     const defaultInventories = [{

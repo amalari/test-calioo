@@ -1,10 +1,13 @@
-import { Supplier } from "../models/Inventory"
-
 export type InventoryResDto = {
     id: string
     name: string
     category: string
     current_stock: number
     price: number
-    supplier: Supplier
+    supplier: SupplierResDto
+}
+
+export type SupplierResDto = {
+    name: string
+    description: string
 }
