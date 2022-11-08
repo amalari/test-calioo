@@ -9,7 +9,7 @@ class InventoryInputValidator extends BaseInputValidator<InventoryReqDto> implem
             category: yup.string().oneOf(Object.values(Category)).required(),
             current_stock: yup.number().required(),
             name: yup.string().required(),
-            price: yup.number().required(),
+            price: yup.number().min(0).required(),
             restaurant_id: yup.string().required(),
             supplier: yup.object().shape({
                 name: yup.string().required(),

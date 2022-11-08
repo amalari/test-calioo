@@ -107,7 +107,6 @@ class InventoryService implements IInventoryService {
             input.price,
             input.supplier,
         );
-        console.log(data.toObject())
         
         await this.db
             .put({

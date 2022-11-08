@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand ----detectOpenHandles",
-    "test:watch": "jest --runInBand ----detectOpenHandles --watchAll",
+    "test": "jest --runInBand ----detectOpenHandles --verbose",
+    "test:watch": "jest --runInBand ----detectOpenHandles --verbose --watchAll",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix"
   },

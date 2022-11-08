@@ -38,14 +38,14 @@ describe('InventoryService', () => {
         })
     }, {
         category: Category.BEVERAGES,
-        name: 'bread',
+        name: 'milk',
         currentStock: 5,
         restaurantId: "1",
         inventoryId: "beverages#1#1",
         price: 10,
         supplier: JSON.stringify({
-            name: 'beverages supplier',
-            description: 'beverages supplier description'
+            name: 'milk supplier',
+            description: 'milk supplier description'
         })
     }]
     beforeEach(() => {
@@ -57,7 +57,7 @@ describe('InventoryService', () => {
     afterAll(() => {
         AWSMock.restore('DynamoDB.DocumentClient');
     })
-    test('create method should return inventory model', async () => {
+    test('"create method" should return inventory model', async () => {
         // eslint-disable-next-line @typescript-eslint/ban-types
         AWSMock.mock('DynamoDB.DocumentClient', 'put', (params: PutItemInput, callback: Function) => {
             callback(null, {});
@@ -83,7 +83,7 @@ describe('InventoryService', () => {
         expect(invetoryModel.restaurantId).toBe(input.restaurant_id);
     });
 
-    test('findById method return null, matched inventory id not found', async () => {
+    test('"findById method" return null, matched inventory id not found', async () => {
         // eslint-disable-next-line @typescript-eslint/ban-types
         AWSMock.mock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
             callback(null, {Item: null});
@@ -93,7 +93,7 @@ describe('InventoryService', () => {
         const inventory = await inventoryService.findById("1")
         expect(inventory).toBe(null)
     });
-    it('findById method should return matched inventory model without discount', async () => {
+    test('"findById method" should return matched inventory model without discount', async () => {
         const expected = defaultInvetory
         // eslint-disable-next-line @typescript-eslint/ban-types
         AWSMock.remock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
@@ -108,7 +108,7 @@ describe('InventoryService', () => {
         expect(inventory.price).toBe(expected.price)
     });
 
-    test('findById method should return matched inventory model with discount specific category 10%', async () => {
+    test('"findById method" should return matched inventory model with discount specific category 10%', async () => {
         const expected = defaultInvetory
         // eslint-disable-next-line @typescript-eslint/ban-types
         AWSMock.remock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
@@ -122,7 +122,7 @@ describe('InventoryService', () => {
         const inventory = await inventoryService.findById("food#1#1")
         expect(inventory.toResponse().price).toBe(9)
     });
-    test('findById method should return matched inventory model with discount all category 20%', async () => {
+    test('"findById method" should return matched inventory model with discount all category 20%', async () => {
         const expected = defaultInvetory
         // eslint-disable-next-line @typescript-eslint/ban-types
         AWSMock.remock('DynamoDB.DocumentClient', 'get', (params: GetItemInput, callback: Function) => {
@@ -137,7 +137,7 @@ describe('InventoryService', () => {
         expect(inventory.toResponse().price).toBe(8)
     });
 
-    test('findAll method should return list inventory model without discount', async () => {
+    test('"findAll method" should return list inventory model without discount', async () => {
         const expected = defaultInventories
         // eslint-disable-next-line @typescript-eslint/ban-types
         AWSMock.mock('DynamoDB.DocumentClient', 'scan', (params: GetItemInput, callback: Function) => {
@@ -155,7 +155,7 @@ describe('InventoryService', () => {
         }
     });
 
-    test('findAll method should return list inventory model with food discount 10% and beverages discount 20%', async () => {
+    test('"findAll method" should return list inventory model with food discount 10% and beverages discount 20%', async () => {
         const expected = defaultInventories
         // eslint-disable-next-line @typescript-eslint/ban-types
         AWSMock.remock('DynamoDB.DocumentClient', 'scan', (params: GetItemInput, callback: Function) => {
@@ -178,7 +178,7 @@ describe('InventoryService', () => {
         }
     });
 
-    test('findAll method should return list inventory model with all discount 20%', async () => {
+    test('"findAll method" should return list inventory model with all discount 20%', async () => {
         const expected = defaultInventories
         // eslint-disable-next-line @typescript-eslint/ban-types
         AWSMock.remock('DynamoDB.DocumentClient', 'scan', (params: GetItemInput, callback: Function) => {
@@ -199,7 +199,7 @@ describe('InventoryService', () => {
         }
     });
 
-    test('findAll method should return list inventory model with pagination limit 1', async () => {
+    test('"findAll method" should return list inventory model with pagination limit 1', async () => {
         const expected = defaultInventories
         const lastKeyExpected = {inventoryId: "beverages#1#1", restaurantId: "1"}
         // eslint-disable-next-line @typescript-eslint/ban-types

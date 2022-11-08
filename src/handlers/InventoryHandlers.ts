@@ -20,7 +20,7 @@ class InventoryHandlers extends BaseHandlers {
 
     async listInventory(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult>{
         try {
-            const params: FindAllInput = { limit: event.queryStringParameters?.limit ? event.queryStringParameters?.limit as unknown as number : 10 }
+            const params: FindAllInput = { limit: event.queryStringParameters?.limit ? parseInt(event.queryStringParameters?.limit) : 10 }
             if(event.queryStringParameters?.last_key){
                 params.lastKey = event.queryStringParameters?.last_key
             }
@@ -43,7 +43,7 @@ class InventoryHandlers extends BaseHandlers {
 
     async getInventory(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
         try {
-            if(!InventoryModel.validateId(event.pathParameters?.id as string)) throw new ValidationError(`Invalid Id: ${event.pathParameters?.id as string}`)
+            if(!InventoryModel.validateId(event.pathParameters?.id as string)) throw new HttpError(httpStatusCodes.BAD_REQUEST, { error: `Invalid Id: ${event.pathParameters?.id as string}` })
 
             const inventory = await this.service.findById(event.pathParameters?.id as string);
             if(!inventory) throw new HttpError(httpStatusCodes.NOT_FOUND, { error: `Inventory with Id: ${event.pathParameters?.id} Not Found` });
