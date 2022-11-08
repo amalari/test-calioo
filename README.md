@@ -30,7 +30,7 @@ npm run test
 ## How to run in local
 Install serverless dynamodb local
 ```sh
-sls dynamodb
+sls dynamodb install
 ```
 run the app locally using this command
 ```sh
