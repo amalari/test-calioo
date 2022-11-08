@@ -146,6 +146,7 @@ plugins:
 
 custom:
   autoswagger:
+    title: Test Calioo
     typefiles: [
       './src/dto/InventoryDiscountReqDto.ts',
       './src/dto/InventoryDiscountResDto.ts',
