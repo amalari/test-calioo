@@ -35,7 +35,8 @@ provider:
             - "dynamodb:DeleteItem"
             - "dynamodb:Scan"
           Resource:
-            - { "Fn::GetAtt": ["ProductsTable", "Arn"] }
+            - { "Fn::GetAtt": ["InventoriesTable", "Arn"] }
+            - { "Fn::GetAtt": ["InventoryDiscountsTable", "Arn"] }
 
 
 functions:
